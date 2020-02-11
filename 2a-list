@@ -25,6 +25,7 @@ int m = 0;
 int s = 0; 
 int numThreads = 1; 
 int numIterations = 1; 
+int yieldPrint = 0; 
 // int cs = 0; 
 // locks and such
 pthread_mutex_t mutex;
@@ -63,7 +64,6 @@ int main(int argc, char** argv)
         {0,0,0,0}
     };
 
-    
     int optargLen = 0; 
     int c; 
     while ((c = getopt_long(argc, argv, "", options, NULL))!=-1)
@@ -78,6 +78,8 @@ int main(int argc, char** argv)
                 break; 
             case 3: 
                 // printf("list-yield"); 
+                yieldPrint = 1; 
+                printf("list-%s", optarg); 
                 optargLen = strlen(optarg); 
                 if (optargLen > 3)
                 {
@@ -152,21 +154,14 @@ int main(int argc, char** argv)
         }
     }
 
-    for (int i = 0; i < numThreads; i++)
-    {
-        for (int j = 0; j < numIterations; j++)
-        {
-            printf("i,j: %i,%i: ", i, j); 
-            printf("%s\n", allValues[i][j].key); 
-        }
-    }
-    // printf("node 1: %s\n", allValues[0][0].key); 
-    // printf("node 2: %s\n", allValues[0][1].key);  
-    // printf("node 1: %s\n", myList->key); 
-    // printf("node 2: %s\n", (myList+1)->key); 
-    
-    
-
+    // for (int i = 0; i < numThreads; i++)
+    // {
+    //     for (int j = 0; j < numIterations; j++)
+    //     {
+    //         printf("i,j: %i,%i: ", i, j); 
+    //         printf("%s\n", allValues[i][j].key); 
+    //     }
+    // }
     /*
 
     int listNum[2]; 
@@ -213,86 +208,85 @@ int main(int argc, char** argv)
             pthread_join(threadArray[i], NULL);  
     }
 
-    /*
-
-    int threadIndex1 = 0; 
-    int * threadIndexPtr1 = &threadIndex1; 
-    int threadIndex2 = 1; 
-    int * threadIndexPtr2 = &threadIndex2;
-    pthread_create(&threadArray[0], NULL, threadFunc, &threadIndex[0]); 
-    pthread_create(&threadArray[1], NULL, threadFunc, threadIndexPtr2);
-    pthread_join(threadArray[0], NULL); 
-    pthread_join(threadArray[1], NULL);
-
-    */
-
     // end clock 
 	clock_gettime(CLOCK_MONOTONIC, &end);	
 
 	diff = BILLION * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec;
 
-    // checkLindexList
-    printf("linked list: \n");  
-    SortedListElement_t* check; 
-    for (check = head->next; check != head; check = check->next)
-    {
-        printf("->%s\n", check->key); 
-    }
+    // ** linked list print **//
+    // printf("linked list: \n");  
+    // SortedListElement_t* check; 
+    // for (check = head->next; check != head; check = check->next)
+    // {
+    //     printf("->%s\n", check->key); 
+    // }
+    //** head print out **//
+    // printf("head: \n");  
+    // printf("head next: %s\n", head->next->key); 
+    // printf("head prev: %s\n", head->prev->key); 
+    // ** reverse linked list print out **//
+    // printf("linked list reverse: \n");  
+    // SortedListElement_t* checkBack; 
+    // for (checkBack = head->prev; checkBack != head; checkBack = checkBack->prev)
+    // {
+    //     printf("<-%s\n", checkBack->key); 
+    // }
 
+    
 
-    if ( opt_yield == 1)
+    /*
+        the name of the test, which is of the form: list-yieldopts-syncopts: where
+            yieldopts = {none, i,d,l,id,il,dl,idl}
+            syncopts = {none,s,m}
+        the number of threads (from --threads=)
+        the number of iterations (from --iterations=)
+        the number of lists (always 1 in this project)
+        the total number of operations performed: threads x iterations x 3 (insert + lookup + delete)
+        the total run time (in nanoseconds) for all threads
+        the average time per operation (in nanoseconds).
+    */
+    if (yieldPrint == 0)
     {
-        if ( m == 1 )
-        {
-            printf("-m, ");
-        }
-        else if ( s == 1 )
-        {
-            printf("-s, ");
-        }
+        printf("list-none"); 
+        if (m == 1)
+            printf("-m, "); 
+        else if (s == 1)
+            printf("-s, "); 
         else
-        {
             printf("-none, "); 
-        }
     }
-    else
+    else if (yieldPrint == 1)
     {
-        if ( m == 1 )
-        {
-            printf("add-m, ");
-        }
-        else if ( s == 1 )
-        {
-            printf("add-s, ");
-        }
+       // printf("list-none"); 
+        if (m == 1)
+            printf("-m, "); 
+        else if (s == 1)
+            printf("-s, "); 
         else
-        {
-            printf("add-none, "); 
-        }
+            printf("-none, ");
     }
-    int numOps = numThreads * numIterations * 2; 
+    int numOps = numThreads * numIterations * 3; 
     int avgDiff = diff / numOps; 
-    printf("%d, %d, %d, %d, %d, %d\n", numThreads, numIterations, numOps, diff, avgDiff, counter);
+    printf("%d, %d, %d, %d, %d\n", numThreads, numIterations, numOps, diff, avgDiff);
     exit(0); 
 }
 
 // functions
 void *threadFunc(void * num) 
 { 
+    if ( m == 1 )
+    {
+        pthread_mutex_lock(&mutex); 
+    }
+    else if ( s == 1 )
+    {
+        while (__sync_lock_test_and_set(&sLock, 1)) while (sLock);
+    }
     // arr[i][j] = *(ptr + (i x no_of_cols + j))
-    // arr[i][j] = *(ptr + (i x j + j))
 
     // index saying which thread we are on
     int iIndex = *((int *)num); 
     // initialize each to linked list
-    printf("threadFunc iIndex: %i\n", iIndex); 
-
-    printf("state of list: \n");  
-    SortedListElement_t* checker; 
-    for (checker = head->next; checker != head; checker = checker->next)
-    {
-        printf("->%s\n", checker->key); 
-    }
 
     for (int j = 0; j < numIterations; j++)
     {
@@ -300,6 +294,43 @@ void *threadFunc(void * num)
         SortedList_insert(head, (myList+help)); 
     }
     
+    // get length
+    int len = SortedList_length(head); 
+    if (len == -1)
+    {
+        fprintf(stderr, "Finding length of corrupted list\n"); 
+        exit(2); 
+    }
+    // printf("length: %i\n", len);
+
+     // test lookup
+     for (int j = 0; j < numIterations; j++)
+    {
+        int help = iIndex * numIterations + j; 
+        // printf("looking up: %s\n", (myList+help)->key); 
+        SortedListElement_t* found = SortedList_lookup(head, (myList+help)->key); 
+        if (found == NULL)
+        {
+            fprintf(stderr, "Looked up an element in a corrupted list\n");
+            exit(2); 
+        } 
+        // printf("deleting: %s\n", (myList+help)->key); 
+        if (SortedList_delete(found) == 1)
+        {
+            fprintf(stderr, "Deleting from corrupted list\n"); 
+            exit(2); 
+        }
+    } 
+
+    if ( m == 1 )
+    {
+        pthread_mutex_unlock(&mutex); 
+    }
+    else if ( s == 1 )
+    {
+        __sync_lock_release(&sLock);
+    }
+    // done
     return NULL; 
 }  
 
