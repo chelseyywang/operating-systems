@@ -1,0 +1,14 @@
+NAME: Chelsey Wang
+EMAIL: chelseyyywang@gmail.com
+ID: 705124638
+
+
+Contains files lab0.c, Makefile, backtrace.png, breakpoint.png
+
+The smoke test cases I have check
+input and output file, a catch with no segfault, 
+a catch with a segfault, a plain segfault, 
+incorrect or missing arguments, input with a file
+that doesn't exist, input from the command line, 
+ and an output in a directory that doesn't exist.
+  

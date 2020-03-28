@@ -1,0 +1,539 @@
+Total: 420 samples
+     413  98.3%  98.3%      420 100.0% threadFunc
+       2   0.5%  98.8%        2   0.5% ?? /usr/src/debug////////glibc-2.17-c758a686/string/../sysdeps/x86_64/multiarch/strcmp-sse42.S:165
+       2   0.5%  99.3%        2   0.5% ?? /usr/src/debug////////glibc-2.17-c758a686/string/../sysdeps/x86_64/multiarch/strcmp-sse42.S:1730
+       1   0.2%  99.5%        1   0.2% ?? /usr/src/debug////////glibc-2.17-c758a686/string/../sysdeps/x86_64/multiarch/strcmp-sse42.S:202
+       1   0.2%  99.8%        1   0.2% ?? /usr/src/debug////////glibc-2.17-c758a686/string/../sysdeps/x86_64/multiarch/strcmp-sse42.S:204
+       1   0.2% 100.0%        1   0.2% ?? /usr/src/debug////////glibc-2.17-c758a686/string/../sysdeps/x86_64/multiarch/strcmp-sse42.S:205
+       0   0.0% 100.0%      420 100.0% ?? /usr/src/debug////////glibc-2.17-c758a686/misc/../sysdeps/unix/sysv/linux/x86_64/clone.S:111
+       0   0.0% 100.0%        5   1.2% SortedList_insert
+       0   0.0% 100.0%        2   0.5% SortedList_lookup
+       0   0.0% 100.0%      420 100.0% start_thread
+ROUTINE ====================== threadFunc in /u/ma/ugrad/chelsey/cs111/proj2b/lab2_list.c
+   413    420 Total samples (flat / cumulative)
+     .      .  342: // all of our elements are ready inside of myItems
+     .      .  343: // here we will portion them into different lists with different heads
+     .      .  344: // save the head number, so we can operate inside of that with a corresponding lock 
+     .      .  345: // functions
+     .      .  346: void *threadFunc(void * num) 
+---
+     .      .  347: { 
+     .      .  348:     int listIndex = 0; 
+     .      .  349:     
+     .      .  350:     // arr[i][j] = *(ptr + (i x no_of_cols + j))
+     .      .  351: 
+     .      .  352:     // index saying which thread we are on
+     .      .  353:     int iIndex = *((int *)num); 
+     .      .  354:     // initialize each to linked list
+     .      .  355: 
+     .      .  356:     for (int j = 0; j < numIterations; j++)
+     .      .  357:     {
+     .      .  358: 
+     .      .  359:         int help = iIndex * numIterations + j;
+     .      .  360:  
+     .      .  361:         if ( m == 1 )
+     .      .  362:         {
+     .      .  363:             struct timespec lockStart, lockEnd;
+     .      .  364:             // printf("start lock time: %lld\n", lockTimer); 
+     .      .  365:             // printf("right after declaration: \n"); 
+     .      .  366:             // printf("lockStart.tv_sec: %ld\n", lockStart.tv_sec); 
+     .      .  367:             // printf("lockStart.tv_nsec: %ld\n", lockStart.tv_nsec); 
+     .      .  368:             // printf("lockEnd.tv_sec: %ld\n", lockEnd.tv_sec); 
+     .      .  369:             // printf("lockEnd.tv_nsec: %ld\n", lockEnd.tv_nsec); 
+     .      .  370:             if (numLists == 1)
+     .      .  371:             {
+     .      .  372:                 listIndex = 0; 
+     .      .  373:             }
+     .      .  374:             else
+     .      .  375:             {
+     .      .  376:                 listIndex = hashFunc((myItems+help)->key); 
+     .      .  377:             }
+     .      .  378:             // printf("listIndex: %i\n", listIndex);
+     .      .  379:             clock_gettime(CLOCK_MONOTONIC, &lockStart);	
+     .      .  380:             pthread_mutex_lock(&mutexPtr[listIndex]); 
+     .      .  381:             clock_gettime(CLOCK_MONOTONIC, &lockEnd);	
+     .      .  382:             lockTimer += BILLION * (lockEnd.tv_sec - lockStart.tv_sec) + lockEnd.tv_nsec - lockStart.tv_nsec;
+     .      .  383:             // printf("after calculation: \n"); 
+     .      .  384:             // printf("lockStart.tv_sec: %ld\n", lockStart.tv_sec); 
+     .      .  385:             // printf("lockStart.tv_nsec: %ld\n", lockStart.tv_nsec); 
+     .      .  386:             // printf("lockEnd.tv_sec: %ld\n", lockEnd.tv_sec); 
+     .      .  387:             // printf("lockEnd.tv_nsec: %ld\n", lockEnd.tv_nsec); 
+     .      .  388:             // printf("end lock time: %lld\n", lockTimer); 
+     .      .  389: 
+     .      .  390:         }
+     .      .  391:         else if ( s == 1 )
+     .      .  392:         {
+     .      .  393: 
+     .      .  394:             struct timespec lockStart, lockEnd;
+     .      .  395:             if (numLists == 1)
+     .      .  396:             {
+     .      .  397:                 listIndex = 0; 
+     .      .  398:             }
+     .      .  399:             else
+     .      .  400:             {
+     .      .  401:                 listIndex = hashFunc((myItems+help)->key); 
+     .      .  402:             }
+     .      .  403:             clock_gettime(CLOCK_MONOTONIC, &lockStart);	
+   351    351  404:             while (__sync_lock_test_and_set(&sLockPtr[listIndex], 1)) while(sLockPtr[listIndex]);
+     .      .  405:             clock_gettime(CLOCK_MONOTONIC, &lockEnd);	
+     .      .  406:             lockTimer += BILLION * (lockEnd.tv_sec - lockStart.tv_sec) + lockEnd.tv_nsec - lockStart.tv_nsec;
+     .      .  407:             // printf("end lock time: %lld\n", lockTimer); 
+     .      .  408:         }
+     .      5  409:         SortedList_insert(*(headPtr+listIndex), (myItems+help)); 
+     .      .  410:         if ( m == 1 )
+     .      .  411:         {
+     .      .  412:             pthread_mutex_unlock(&mutexPtr[listIndex]); 
+     .      .  413:         }
+     .      .  414:         else if ( s == 1 )
+     .      .  415:         {
+     .      .  416:             __sync_lock_release(&sLockPtr[listIndex]);
+     .      .  417:         }
+     .      .  418:     }
+     .      .  419:     if ( s == 1 )
+     .      .  420:         {
+     .      .  421:             while (__sync_lock_test_and_set(&sLockPtr[listIndex], 1)) while(sLockPtr[listIndex]);
+     .      .  422:             counter++; 
+     .      .  423:             counter*=counter; 
+     .      .  424:             counter/=counter; 
+     .      .  425:             counter--; 
+     .      .  426:             __sync_lock_release(&sLockPtr[listIndex]);
+     .      .  427:         }    
+     .      .  428: 
+     .      .  429:     if ( m == 1 )
+     .      .  430:     {
+     .      .  431:         struct timespec lockStart, lockEnd;
+     .      .  432:         // printf("start lock time: %lld\n", lockTimer); 
+     .      .  433:         // printf("right after declaration: \n"); 
+     .      .  434:         // printf("lockStart.tv_sec: %ld\n", lockStart.tv_sec); 
+     .      .  435:         // printf("lockStart.tv_nsec: %ld\n", lockStart.tv_nsec); 
+     .      .  436:         // printf("lockEnd.tv_sec: %ld\n", lockEnd.tv_sec); 
+     .      .  437:         // printf("lockEnd.tv_nsec: %ld\n", lockEnd.tv_nsec); 
+     .      .  438:         clock_gettime(CLOCK_MONOTONIC, &lockStart);
+     .      .  439:         // printf("listIndex: %i\n", listIndex);	
+     .      .  440:         pthread_mutex_lock(&mutexPtr[listIndex]); 
+     .      .  441:         clock_gettime(CLOCK_MONOTONIC, &lockEnd);	
+     .      .  442:         lockTimer += BILLION * (lockEnd.tv_sec - lockStart.tv_sec) + lockEnd.tv_nsec - lockStart.tv_nsec;
+     .      .  443:         // printf("after calculation: \n"); 
+     .      .  444:         // printf("lockStart.tv_sec: %ld\n", lockStart.tv_sec); 
+     .      .  445:         // printf("lockStart.tv_nsec: %ld\n", lockStart.tv_nsec); 
+     .      .  446:         // printf("lockEnd.tv_sec: %ld\n", lockEnd.tv_sec); 
+     .      .  447:         // printf("lockEnd.tv_nsec: %ld\n", lockEnd.tv_nsec); 
+     .      .  448:         // printf("end lock time: %lld\n", lockTimer); 
+     .      .  449:     }
+     .      .  450:     else if ( s == 1 )
+     .      .  451:     {
+     .      .  452:         struct timespec lockStart, lockEnd;
+     .      .  453:         //printf("start lock time: %lld\n", lockTimer); 
+     .      .  454:         clock_gettime(CLOCK_MONOTONIC, &lockStart);	
+     .      .  455:         while (__sync_lock_test_and_set(&sLockPtr[listIndex], 1))  while(sLockPtr[listIndex]);
+     .      .  456:         clock_gettime(CLOCK_MONOTONIC, &lockEnd);	
+     .      .  457:         lockTimer += BILLION * (lockEnd.tv_sec - lockStart.tv_sec) + lockEnd.tv_nsec - lockStart.tv_nsec;
+     .      .  458:         // printf("end lock time: %lld\n", lockTimer); 
+     .      .  459:     }
+     .      .  460:     // get length
+     .      .  461:     int len = 0; 
+     .      .  462:     for (int i = 0; i < numLists; i++)
+     .      .  463:     {
+     .      .  464:         len += SortedList_length(*(headPtr+i)); 
+     .      .  465:     }
+     .      .  466:     
+     .      .  467:     if (len == -1)
+     .      .  468:     {
+     .      .  469:         fprintf(stderr, "Finding length of corrupted list\n"); 
+     .      .  470:         exit(2); 
+     .      .  471:     }
+     .      .  472:     if ( m == 1 )
+     .      .  473:     {
+     .      .  474:         pthread_mutex_unlock(&mutexPtr[listIndex]); 
+     .      .  475:     }
+     .      .  476:     else if ( s == 1 )
+     .      .  477:     {
+     .      .  478:         __sync_lock_release(&sLockPtr[listIndex]);
+     .      .  479:     }
+     .      .  480:     // printf("length: %i\n", len);
+     .      .  481: 
+     .      .  482:      // test lookup
+     .      .  483:      //char * matchKey = malloc(25*sizeof(char)); 
+     .      .  484:      for (int j = 0; j < numIterations; j++)
+     .      .  485:     {
+     .      .  486:         int help = iIndex * numIterations + j; 
+     .      .  487:         if ( m == 1 )
+     .      .  488:         {
+     .      .  489:             struct timespec lockStart, lockEnd;
+     .      .  490:             // printf("start lock time: %lld\n", lockTimer); 
+     .      .  491:             // printf("right after declaration: \n"); 
+     .      .  492:             // printf("lockStart.tv_sec: %ld\n", lockStart.tv_sec); 
+     .      .  493:             // printf("lockStart.tv_nsec: %ld\n", lockStart.tv_nsec); 
+     .      .  494:             // printf("lockEnd.tv_sec: %ld\n", lockEnd.tv_sec); 
+     .      .  495:             // printf("lockEnd.tv_nsec: %ld\n", lockEnd.tv_nsec); 
+     .      .  496:             if (numLists == 1)
+     .      .  497:             {
+     .      .  498:                 listIndex = 0; 
+     .      .  499:             }
+     .      .  500:             else
+     .      .  501:             {
+     .      .  502:                 listIndex = hashFunc((myItems+help)->key); 
+     .      .  503:             }
+     .      .  504:             clock_gettime(CLOCK_MONOTONIC, &lockStart);	
+     .      .  505:             pthread_mutex_lock(&mutexPtr[listIndex]); 
+     .      .  506:             clock_gettime(CLOCK_MONOTONIC, &lockEnd);	
+     .      .  507:             lockTimer += BILLION * (lockEnd.tv_sec - lockStart.tv_sec) + lockEnd.tv_nsec - lockStart.tv_nsec;
+     .      .  508:             // printf("after calculation: \n"); 
+     .      .  509:             // printf("lockStart.tv_sec: %ld\n", lockStart.tv_sec); 
+     .      .  510:             // printf("lockStart.tv_nsec: %ld\n", lockStart.tv_nsec); 
+     .      .  511:             // printf("lockEnd.tv_sec: %ld\n", lockEnd.tv_sec); 
+     .      .  512:             // printf("lockEnd.tv_nsec: %ld\n", lockEnd.tv_nsec); 
+     .      .  513:             // printf("end lock time: %lld\n", lockTimer); 
+     .      .  514:         }
+     .      .  515:         else if ( s == 1 )
+     .      .  516:         {
+     .      .  517:             struct timespec lockStart, lockEnd;
+     .      .  518:             if (numLists == 1)
+     .      .  519:             {
+     .      .  520:                 listIndex = 0; 
+     .      .  521:             }
+     .      .  522:             else
+     .      .  523:             {
+     .      .  524:                 listIndex = hashFunc((myItems+help)->key); 
+     .      .  525:             }
+     .      .  526:             // printf("start lock time: %lld\n", lockTimer); 
+     .      .  527:             clock_gettime(CLOCK_MONOTONIC, &lockStart);	
+    62     62  528:             while (__sync_lock_test_and_set(&sLockPtr[listIndex], 1)) while(sLockPtr[listIndex]);
+     .      .  529:             clock_gettime(CLOCK_MONOTONIC, &lockEnd);	
+     .      .  530:             lockTimer += BILLION * (lockEnd.tv_sec - lockStart.tv_sec) + lockEnd.tv_nsec - lockStart.tv_nsec;
+     .      .  531:             // printf("end lock time: %lld\n", lockTimer); 
+     .      .  532:         }
+     .      .  533: 
+     .      .  534:         // *** USED TO BE DECLARED HERE WORKS WITH ONE LIST LMAO ***//
+     .      .  535:         // int help = iIndex * numIterations + j; 
+     .      .  536: 
+     .      .  537: 
+     .      .  538:         if (numLists == 1)
+     .      .  539:         {
+     .      .  540:             listIndex = 0; 
+     .      .  541:         }
+     .      .  542:         // else
+     .      .  543:         // {
+     .      .  544:         //     // strcpy(matchKey, (myItems+help)->key); 
+     .      .  545:         //     listIndex = hashFunc(matchKey); 
+     .      .  546:         // }
+     .      .  547:         // printf("looking up: %s\n", (myItems+help)->key); 
+     .      .  548:         // SortedListElement_t* found = SortedList_lookup(*(headPtr+listIndex), (myItems+help)->key); 
+     .      2  549:         SortedListElement_t* found = SortedList_lookup(*(headPtr+listIndex), (myItems+help)->key); 
+     .      .  550: 
+     .      .  551:         if (found == NULL)
+     .      .  552:         {
+     .      .  553:             fprintf(stderr, "Looked up an element in a corrupted list\n");
+     .      .  554:             exit(2); 
+     .      .  555:         } 
+     .      .  556:         // printf("deleting: %s\n", (myItems+help)->key); 
+     .      .  557:         if (SortedList_delete(found) == 1)
+     .      .  558:         {
+     .      .  559:             fprintf(stderr, "Deleting from corrupted list\n"); 
+     .      .  560:             exit(2); 
+     .      .  561:         }
+     .      .  562:         if ( m == 1 )
+     .      .  563:         {
+     .      .  564:             pthread_mutex_unlock(&mutexPtr[listIndex]); 
+     .      .  565:         }
+     .      .  566:         else if ( s == 1 )
+     .      .  567:         {
+     .      .  568:             __sync_lock_release(&sLockPtr[listIndex]);
+     .      .  569:         }
+     .      .  570:         // if ( s == 1 )
+     .      .  571:         // {
+     .      .  572:         //     while (__sync_lock_test_and_set(&sLockPtr[listIndex], 1)) while(sLockPtr[listIndex]);
+     .      .  573:         //     for (int i = 0; i < 1000; i++)
+     .      .  574:         //     {
+     .      .  575:         //         if (counter == 0)
+     .      .  576:         //         {
+     .      .  577:         //             counter++; 
+     .      .  578:         //             counter*=counter; 
+     .      .  579:         //             counter/=counter; 
+     .      .  580:         //             counter--; 
+     .      .  581:         //         }
+     .      .  582:         //         else
+     .      .  583:         //         {
+     .      .  584:         //             counter++; 
+     .      .  585:         //             counter*=counter; 
+     .      .  586:         //             counter/=counter; 
+     .      .  587:         //             counter--; 
+     .      .  588:         //         }
+     .      .  589:                 
+     .      .  590:         //     }
+     .      .  591:         //     __sync_lock_release(&sLockPtr[listIndex]);
+     .      .  592:         // }
+     .      .  593:     } 
+     .      .  594:     // done
+     .      .  595:     return NULL; 
+     .      .  596: }  
+---
+     .      .  597: 
+     .      .  598: int hashFunc(const char* keyValue)
+     .      .  599: {
+     .      .  600:     return atoi(keyValue)%numLists; 
+     .      .  601: }
+ROUTINE ====================== threadFunc in /u/ma/ugrad/chelsey/cs111/proj2b/lab2_list.c
+   413    420 Total samples (flat / cumulative)
+     .      .  342: // all of our elements are ready inside of myItems
+     .      .  343: // here we will portion them into different lists with different heads
+     .      .  344: // save the head number, so we can operate inside of that with a corresponding lock 
+     .      .  345: // functions
+     .      .  346: void *threadFunc(void * num) 
+---
+     .      .  347: { 
+     .      .  348:     int listIndex = 0; 
+     .      .  349:     
+     .      .  350:     // arr[i][j] = *(ptr + (i x no_of_cols + j))
+     .      .  351: 
+     .      .  352:     // index saying which thread we are on
+     .      .  353:     int iIndex = *((int *)num); 
+     .      .  354:     // initialize each to linked list
+     .      .  355: 
+     .      .  356:     for (int j = 0; j < numIterations; j++)
+     .      .  357:     {
+     .      .  358: 
+     .      .  359:         int help = iIndex * numIterations + j;
+     .      .  360:  
+     .      .  361:         if ( m == 1 )
+     .      .  362:         {
+     .      .  363:             struct timespec lockStart, lockEnd;
+     .      .  364:             // printf("start lock time: %lld\n", lockTimer); 
+     .      .  365:             // printf("right after declaration: \n"); 
+     .      .  366:             // printf("lockStart.tv_sec: %ld\n", lockStart.tv_sec); 
+     .      .  367:             // printf("lockStart.tv_nsec: %ld\n", lockStart.tv_nsec); 
+     .      .  368:             // printf("lockEnd.tv_sec: %ld\n", lockEnd.tv_sec); 
+     .      .  369:             // printf("lockEnd.tv_nsec: %ld\n", lockEnd.tv_nsec); 
+     .      .  370:             if (numLists == 1)
+     .      .  371:             {
+     .      .  372:                 listIndex = 0; 
+     .      .  373:             }
+     .      .  374:             else
+     .      .  375:             {
+     .      .  376:                 listIndex = hashFunc((myItems+help)->key); 
+     .      .  377:             }
+     .      .  378:             // printf("listIndex: %i\n", listIndex);
+     .      .  379:             clock_gettime(CLOCK_MONOTONIC, &lockStart);	
+     .      .  380:             pthread_mutex_lock(&mutexPtr[listIndex]); 
+     .      .  381:             clock_gettime(CLOCK_MONOTONIC, &lockEnd);	
+     .      .  382:             lockTimer += BILLION * (lockEnd.tv_sec - lockStart.tv_sec) + lockEnd.tv_nsec - lockStart.tv_nsec;
+     .      .  383:             // printf("after calculation: \n"); 
+     .      .  384:             // printf("lockStart.tv_sec: %ld\n", lockStart.tv_sec); 
+     .      .  385:             // printf("lockStart.tv_nsec: %ld\n", lockStart.tv_nsec); 
+     .      .  386:             // printf("lockEnd.tv_sec: %ld\n", lockEnd.tv_sec); 
+     .      .  387:             // printf("lockEnd.tv_nsec: %ld\n", lockEnd.tv_nsec); 
+     .      .  388:             // printf("end lock time: %lld\n", lockTimer); 
+     .      .  389: 
+     .      .  390:         }
+     .      .  391:         else if ( s == 1 )
+     .      .  392:         {
+     .      .  393: 
+     .      .  394:             struct timespec lockStart, lockEnd;
+     .      .  395:             if (numLists == 1)
+     .      .  396:             {
+     .      .  397:                 listIndex = 0; 
+     .      .  398:             }
+     .      .  399:             else
+     .      .  400:             {
+     .      .  401:                 listIndex = hashFunc((myItems+help)->key); 
+     .      .  402:             }
+     .      .  403:             clock_gettime(CLOCK_MONOTONIC, &lockStart);	
+   351    351  404:             while (__sync_lock_test_and_set(&sLockPtr[listIndex], 1)) while(sLockPtr[listIndex]);
+     .      .  405:             clock_gettime(CLOCK_MONOTONIC, &lockEnd);	
+     .      .  406:             lockTimer += BILLION * (lockEnd.tv_sec - lockStart.tv_sec) + lockEnd.tv_nsec - lockStart.tv_nsec;
+     .      .  407:             // printf("end lock time: %lld\n", lockTimer); 
+     .      .  408:         }
+     .      5  409:         SortedList_insert(*(headPtr+listIndex), (myItems+help)); 
+     .      .  410:         if ( m == 1 )
+     .      .  411:         {
+     .      .  412:             pthread_mutex_unlock(&mutexPtr[listIndex]); 
+     .      .  413:         }
+     .      .  414:         else if ( s == 1 )
+     .      .  415:         {
+     .      .  416:             __sync_lock_release(&sLockPtr[listIndex]);
+     .      .  417:         }
+     .      .  418:     }
+     .      .  419:     if ( s == 1 )
+     .      .  420:         {
+     .      .  421:             while (__sync_lock_test_and_set(&sLockPtr[listIndex], 1)) while(sLockPtr[listIndex]);
+     .      .  422:             counter++; 
+     .      .  423:             counter*=counter; 
+     .      .  424:             counter/=counter; 
+     .      .  425:             counter--; 
+     .      .  426:             __sync_lock_release(&sLockPtr[listIndex]);
+     .      .  427:         }    
+     .      .  428: 
+     .      .  429:     if ( m == 1 )
+     .      .  430:     {
+     .      .  431:         struct timespec lockStart, lockEnd;
+     .      .  432:         // printf("start lock time: %lld\n", lockTimer); 
+     .      .  433:         // printf("right after declaration: \n"); 
+     .      .  434:         // printf("lockStart.tv_sec: %ld\n", lockStart.tv_sec); 
+     .      .  435:         // printf("lockStart.tv_nsec: %ld\n", lockStart.tv_nsec); 
+     .      .  436:         // printf("lockEnd.tv_sec: %ld\n", lockEnd.tv_sec); 
+     .      .  437:         // printf("lockEnd.tv_nsec: %ld\n", lockEnd.tv_nsec); 
+     .      .  438:         clock_gettime(CLOCK_MONOTONIC, &lockStart);
+     .      .  439:         // printf("listIndex: %i\n", listIndex);	
+     .      .  440:         pthread_mutex_lock(&mutexPtr[listIndex]); 
+     .      .  441:         clock_gettime(CLOCK_MONOTONIC, &lockEnd);	
+     .      .  442:         lockTimer += BILLION * (lockEnd.tv_sec - lockStart.tv_sec) + lockEnd.tv_nsec - lockStart.tv_nsec;
+     .      .  443:         // printf("after calculation: \n"); 
+     .      .  444:         // printf("lockStart.tv_sec: %ld\n", lockStart.tv_sec); 
+     .      .  445:         // printf("lockStart.tv_nsec: %ld\n", lockStart.tv_nsec); 
+     .      .  446:         // printf("lockEnd.tv_sec: %ld\n", lockEnd.tv_sec); 
+     .      .  447:         // printf("lockEnd.tv_nsec: %ld\n", lockEnd.tv_nsec); 
+     .      .  448:         // printf("end lock time: %lld\n", lockTimer); 
+     .      .  449:     }
+     .      .  450:     else if ( s == 1 )
+     .      .  451:     {
+     .      .  452:         struct timespec lockStart, lockEnd;
+     .      .  453:         //printf("start lock time: %lld\n", lockTimer); 
+     .      .  454:         clock_gettime(CLOCK_MONOTONIC, &lockStart);	
+     .      .  455:         while (__sync_lock_test_and_set(&sLockPtr[listIndex], 1))  while(sLockPtr[listIndex]);
+     .      .  456:         clock_gettime(CLOCK_MONOTONIC, &lockEnd);	
+     .      .  457:         lockTimer += BILLION * (lockEnd.tv_sec - lockStart.tv_sec) + lockEnd.tv_nsec - lockStart.tv_nsec;
+     .      .  458:         // printf("end lock time: %lld\n", lockTimer); 
+     .      .  459:     }
+     .      .  460:     // get length
+     .      .  461:     int len = 0; 
+     .      .  462:     for (int i = 0; i < numLists; i++)
+     .      .  463:     {
+     .      .  464:         len += SortedList_length(*(headPtr+i)); 
+     .      .  465:     }
+     .      .  466:     
+     .      .  467:     if (len == -1)
+     .      .  468:     {
+     .      .  469:         fprintf(stderr, "Finding length of corrupted list\n"); 
+     .      .  470:         exit(2); 
+     .      .  471:     }
+     .      .  472:     if ( m == 1 )
+     .      .  473:     {
+     .      .  474:         pthread_mutex_unlock(&mutexPtr[listIndex]); 
+     .      .  475:     }
+     .      .  476:     else if ( s == 1 )
+     .      .  477:     {
+     .      .  478:         __sync_lock_release(&sLockPtr[listIndex]);
+     .      .  479:     }
+     .      .  480:     // printf("length: %i\n", len);
+     .      .  481: 
+     .      .  482:      // test lookup
+     .      .  483:      //char * matchKey = malloc(25*sizeof(char)); 
+     .      .  484:      for (int j = 0; j < numIterations; j++)
+     .      .  485:     {
+     .      .  486:         int help = iIndex * numIterations + j; 
+     .      .  487:         if ( m == 1 )
+     .      .  488:         {
+     .      .  489:             struct timespec lockStart, lockEnd;
+     .      .  490:             // printf("start lock time: %lld\n", lockTimer); 
+     .      .  491:             // printf("right after declaration: \n"); 
+     .      .  492:             // printf("lockStart.tv_sec: %ld\n", lockStart.tv_sec); 
+     .      .  493:             // printf("lockStart.tv_nsec: %ld\n", lockStart.tv_nsec); 
+     .      .  494:             // printf("lockEnd.tv_sec: %ld\n", lockEnd.tv_sec); 
+     .      .  495:             // printf("lockEnd.tv_nsec: %ld\n", lockEnd.tv_nsec); 
+     .      .  496:             if (numLists == 1)
+     .      .  497:             {
+     .      .  498:                 listIndex = 0; 
+     .      .  499:             }
+     .      .  500:             else
+     .      .  501:             {
+     .      .  502:                 listIndex = hashFunc((myItems+help)->key); 
+     .      .  503:             }
+     .      .  504:             clock_gettime(CLOCK_MONOTONIC, &lockStart);	
+     .      .  505:             pthread_mutex_lock(&mutexPtr[listIndex]); 
+     .      .  506:             clock_gettime(CLOCK_MONOTONIC, &lockEnd);	
+     .      .  507:             lockTimer += BILLION * (lockEnd.tv_sec - lockStart.tv_sec) + lockEnd.tv_nsec - lockStart.tv_nsec;
+     .      .  508:             // printf("after calculation: \n"); 
+     .      .  509:             // printf("lockStart.tv_sec: %ld\n", lockStart.tv_sec); 
+     .      .  510:             // printf("lockStart.tv_nsec: %ld\n", lockStart.tv_nsec); 
+     .      .  511:             // printf("lockEnd.tv_sec: %ld\n", lockEnd.tv_sec); 
+     .      .  512:             // printf("lockEnd.tv_nsec: %ld\n", lockEnd.tv_nsec); 
+     .      .  513:             // printf("end lock time: %lld\n", lockTimer); 
+     .      .  514:         }
+     .      .  515:         else if ( s == 1 )
+     .      .  516:         {
+     .      .  517:             struct timespec lockStart, lockEnd;
+     .      .  518:             if (numLists == 1)
+     .      .  519:             {
+     .      .  520:                 listIndex = 0; 
+     .      .  521:             }
+     .      .  522:             else
+     .      .  523:             {
+     .      .  524:                 listIndex = hashFunc((myItems+help)->key); 
+     .      .  525:             }
+     .      .  526:             // printf("start lock time: %lld\n", lockTimer); 
+     .      .  527:             clock_gettime(CLOCK_MONOTONIC, &lockStart);	
+    62     62  528:             while (__sync_lock_test_and_set(&sLockPtr[listIndex], 1)) while(sLockPtr[listIndex]);
+     .      .  529:             clock_gettime(CLOCK_MONOTONIC, &lockEnd);	
+     .      .  530:             lockTimer += BILLION * (lockEnd.tv_sec - lockStart.tv_sec) + lockEnd.tv_nsec - lockStart.tv_nsec;
+     .      .  531:             // printf("end lock time: %lld\n", lockTimer); 
+     .      .  532:         }
+     .      .  533: 
+     .      .  534:         // *** USED TO BE DECLARED HERE WORKS WITH ONE LIST LMAO ***//
+     .      .  535:         // int help = iIndex * numIterations + j; 
+     .      .  536: 
+     .      .  537: 
+     .      .  538:         if (numLists == 1)
+     .      .  539:         {
+     .      .  540:             listIndex = 0; 
+     .      .  541:         }
+     .      .  542:         // else
+     .      .  543:         // {
+     .      .  544:         //     // strcpy(matchKey, (myItems+help)->key); 
+     .      .  545:         //     listIndex = hashFunc(matchKey); 
+     .      .  546:         // }
+     .      .  547:         // printf("looking up: %s\n", (myItems+help)->key); 
+     .      .  548:         // SortedListElement_t* found = SortedList_lookup(*(headPtr+listIndex), (myItems+help)->key); 
+     .      2  549:         SortedListElement_t* found = SortedList_lookup(*(headPtr+listIndex), (myItems+help)->key); 
+     .      .  550: 
+     .      .  551:         if (found == NULL)
+     .      .  552:         {
+     .      .  553:             fprintf(stderr, "Looked up an element in a corrupted list\n");
+     .      .  554:             exit(2); 
+     .      .  555:         } 
+     .      .  556:         // printf("deleting: %s\n", (myItems+help)->key); 
+     .      .  557:         if (SortedList_delete(found) == 1)
+     .      .  558:         {
+     .      .  559:             fprintf(stderr, "Deleting from corrupted list\n"); 
+     .      .  560:             exit(2); 
+     .      .  561:         }
+     .      .  562:         if ( m == 1 )
+     .      .  563:         {
+     .      .  564:             pthread_mutex_unlock(&mutexPtr[listIndex]); 
+     .      .  565:         }
+     .      .  566:         else if ( s == 1 )
+     .      .  567:         {
+     .      .  568:             __sync_lock_release(&sLockPtr[listIndex]);
+     .      .  569:         }
+     .      .  570:         // if ( s == 1 )
+     .      .  571:         // {
+     .      .  572:         //     while (__sync_lock_test_and_set(&sLockPtr[listIndex], 1)) while(sLockPtr[listIndex]);
+     .      .  573:         //     for (int i = 0; i < 1000; i++)
+     .      .  574:         //     {
+     .      .  575:         //         if (counter == 0)
+     .      .  576:         //         {
+     .      .  577:         //             counter++; 
+     .      .  578:         //             counter*=counter; 
+     .      .  579:         //             counter/=counter; 
+     .      .  580:         //             counter--; 
+     .      .  581:         //         }
+     .      .  582:         //         else
+     .      .  583:         //         {
+     .      .  584:         //             counter++; 
+     .      .  585:         //             counter*=counter; 
+     .      .  586:         //             counter/=counter; 
+     .      .  587:         //             counter--; 
+     .      .  588:         //         }
+     .      .  589:                 
+     .      .  590:         //     }
+     .      .  591:         //     __sync_lock_release(&sLockPtr[listIndex]);
+     .      .  592:         // }
+     .      .  593:     } 
+     .      .  594:     // done
+     .      .  595:     return NULL; 
+     .      .  596: }  
+---
+     .      .  597: 
+     .      .  598: int hashFunc(const char* keyValue)
+     .      .  599: {
+     .      .  600:     return atoi(keyValue)%numLists; 
+     .      .  601: }

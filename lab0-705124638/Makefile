@@ -124,35 +124,24 @@ check: lab0
 
 	#12 check no input; exit 0
 	echo "dino nugs" | ./lab0 --output=2.txt; \
-	if [ $$? -ne 0 ]; \
+	if [[ $$? -ne 0 ]]; \
 	then \
 		echo "smoke test failed; no input not exited with correct code" >> errors.txt ; \
 	fi; \
 	rm 2.txt; \
 
-	#13 check no output; exit 0 
-	echo "dino nugs" > 1.txt \
-	wahoo = `./lab0 --input=1.txt`; \
-	if [ "dino nugs" != $$wahoo ]; \
-	then \
-		echo "smoke test failed; stdout does not match input" >> errors.txt; \
-	fi; \
-	if [ $$? -ne 0 ]; \
-	then \
-		echo "smoke test failed; stdout not exited with correct code " >> errors.txt; \
-	fi; \
-	rm 1.txt; \
-
 	# final
 	if [ -s errors.txt ]; \
 	then \
 		echo -e "\n\n *** :( smoke test failed *** "; \
+	else \
+		echo -e "\npassed bois"; \
 	fi; \
 
 	# cat errors.txt; \
 
 	rm errors.txt lab0; \
-	
+
 dist: 
 	tar -cvzf lab0-705124638.tar.gz lab0.c Makefile backtrace.png breakpoint.png README
 

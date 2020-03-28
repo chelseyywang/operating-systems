@@ -297,14 +297,7 @@ int main(int argc, char** argv)
 // functions
 void *threadFunc(void * num) 
 { 
-    if ( m == 1 )
-    {
-        pthread_mutex_lock(&mutex); 
-    }
-    else if ( s == 1 )
-    {
-        while (__sync_lock_test_and_set(&sLock, 1)) while (sLock);
-    }
+    
     // arr[i][j] = *(ptr + (i x no_of_cols + j))
 
     // index saying which thread we are on
@@ -313,10 +306,36 @@ void *threadFunc(void * num)
 
     for (int j = 0; j < numIterations; j++)
     {
-        int help = iIndex * numIterations + j; 
+
+        int help = iIndex * numIterations + j;
+        if ( m == 1 )
+        {
+            pthread_mutex_lock(&mutex); 
+        }
+        else if ( s == 1 )
+        {
+            while (__sync_lock_test_and_set(&sLock, 1)) while (sLock);
+        }
         SortedList_insert(head, (myList+help)); 
+        if ( m == 1 )
+        {
+            pthread_mutex_unlock(&mutex); 
+        }
+        else if ( s == 1 )
+        {
+            __sync_lock_release(&sLock);
+        }
     }
-    
+        
+
+    if ( m == 1 )
+    {
+        pthread_mutex_lock(&mutex); 
+    }
+    else if ( s == 1 )
+    {
+        while (__sync_lock_test_and_set(&sLock, 1)) while (sLock);
+    }
     // get length
     int len = SortedList_length(head); 
     if (len == -1)
@@ -324,8 +343,24 @@ void *threadFunc(void * num)
         fprintf(stderr, "Finding length of corrupted list\n"); 
         exit(2); 
     }
+    if ( m == 1 )
+    {
+        pthread_mutex_unlock(&mutex); 
+    }
+    else if ( s == 1 )
+    {
+        __sync_lock_release(&sLock);
+    }
     // printf("length: %i\n", len);
 
+    if ( m == 1 )
+    {
+        pthread_mutex_lock(&mutex); 
+    }
+    else if ( s == 1 )
+    {
+        while (__sync_lock_test_and_set(&sLock, 1)) while (sLock);
+    }
      // test lookup
      for (int j = 0; j < numIterations; j++)
     {

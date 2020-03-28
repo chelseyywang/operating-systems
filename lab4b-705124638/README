@@ -1,0 +1,33 @@
+NAME: Chelsey Wang
+EMAIL: chelseyyywang@gmail.com
+ID: 705124638
+
+Files: 
+
+Contains lab4b.c, this README, and a Makefile. 
+The C file takes in input from STDIN, a temperature sensor, and a button. 
+It takes options --scale=, --period, and --log. It will output temperature
+measurements taken from the temperature sensors at a rate specified by --period; 
+otherwise the default rate is once per second. It will output the temperature
+in the units specified by --scale, otherwise the default is Farenheit. It will
+log all commands and output to to file specified by --log, otherwise STDOUT. 
+User can input commands for SCALE=, PERIOD=, START to output commands, STOP to 
+silence output of commands, and OFF to exit the program. All commands, valid
+or invalid,  will be output to STDOUT or logfile if STOP has not been specified. 
+Makefile uses "build" to build the executable, "check" to run the executable
+and ensure it is outputting commands, "clean" to remove the executable and 
+tarball, and "dist" to create a tarball of the C file, Makefile, and README. 
+
+References: 
+TA slides -- Rishab and Alex
+https://dev.to/jeremy/how-to-exit-vim-11dm
+https://navinbhaskar.wordpress.com/2016/07/05/cc-on-intel-edisongalileo-part5temperature-sensor/
+https://drive.google.com/drive/folders/0B6dyEb8VXZo-N3hVcVI0UFpWSVk
+https://drive.google.com/drive/folders/0B6dyEb8VXZo-NzZwb1gzNTRvLXc
+https://www.tutorialspoint.com/c_standard_library/c_function_localtime.htm
+https://pubs.opengroup.org/onlinepubs/009695399/functions/poll.html
+https://www.programiz.com/c-programming/library-function/string.h/strcmp
+http://man7.org/linux/man-pages/man3/bzero.3.html
+http://man7.org/linux/man-pages/man3/memcpy.3.html
+https://www.linuxtoday.com/blog/multiplexed-i0-with-poll.html
+https://www.geeksforgeeks.org/g-fact-41-setting-decimal-precision-in-c/

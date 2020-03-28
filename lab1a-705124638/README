@@ -1,0 +1,17 @@
+NAME: Chelsey Wang
+EMAIL: chelseyyywang@gmail.com
+ID: 705124638
+
+Files: 
+lab1a.c, this README, a makefile, and a tarball. 
+Executable takes in arguments --shell and --debug. 
+
+Makefile can create a tarball with 'make dist', compiles the c code with 'make', 
+and removes the executable and the tarball with 'make clean'. 
+
+References: 
+http://man7.org/linux/man-pages/man2/poll.2.html
+https://www.tutorialspoint.com/unix_system_calls/poll.htm
+https://www.geeksforgeeks.org/pipe-system-call/
+https://www.gnu.org/software/libc/manual/html_node/Noncanon-Example.html
+TA Slides

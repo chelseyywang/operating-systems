@@ -1,0 +1,16 @@
+NAME: Chelsey Wang
+EMAIL: chelseyyywang@gmail.com
+ID: 705124638
+
+Files: This tarball contains lab4c_tcp.c, lab4c_tls.c, a Makefile, and this README. 
+lab4c_tcp.c sends readings from a temperature sensor and takes in commands via the
+tcp server, while lab4c_tls does the same but with a tls server. Both files take
+in mandatory arguments -- host, id, and log. It also requires a port number, which
+is supplied with no long argument, and is simply parsed. 
+The makefile's default builds both the tls and tcp programs. Clean will remove
+the executables and the tarball. Dist creates the submission tarball. 
+
+References: 
+http://www.cs.rpi.edu/~moorthy/Courses/os98/Pgms/socket.html
+https://aticleworld.com/ssl-server-client-using-openssl-in-c/
+https://linux.die.net/man/3/sprintf

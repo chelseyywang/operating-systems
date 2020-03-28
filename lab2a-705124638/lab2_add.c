@@ -73,15 +73,15 @@ int main(int argc, char** argv)
                 printf("add-yield"); 
                 break; 
             case 5: 
-                if (optarg[0] == 'm')
+                if (optarg[0] == 'm' && optarg[1] == '\0')
                 {
                     m = 1; 
                 }
-                else if (optarg[0] == 's')
+                else if (optarg[0] == 's' && optarg[1] == '\0')
                 {
                     s = 1; 
                 }
-                else if (optarg[0] == 'c')
+                else if (optarg[0] == 'c' && optarg[1] == '\0')
                 {
                     cs = 1; 
                 }
@@ -131,43 +131,43 @@ int main(int argc, char** argv)
     {
         if ( m == 1 )
         {
-            printf("-m, ");
+            printf("-m,");
         }
         else if ( s == 1 )
         {
-            printf("-s, ");
+            printf("-s,");
         }
         else if ( cs == 1 )
         {
-            printf("-c, ");
+            printf("-c,");
         }
         else
         {
-            printf("-none, "); 
+            printf("-none,"); 
         }
     }
     else
     {
         if ( m == 1 )
         {
-            printf("add-m, ");
+            printf("add-m,");
         }
         else if ( s == 1 )
         {
-            printf("add-s, ");
+            printf("add-s,");
         }
         else if ( cs == 1 )
         {
-            printf("add-c, ");
+            printf("add-c,");
         }
         else
         {
-            printf("add-none, "); 
+            printf("add-none,"); 
         }
     }
     int numOps = numThreads * numIterations * 2; 
     int avgDiff = diff / numOps; 
-    printf("%d, %d, %d, %d, %d, %d\n", numThreads, numIterations, numOps, diff, avgDiff, counter);
+    printf("%d,%d,%d,%lld,%d,%lld\n", numThreads, numIterations, numOps, diff, avgDiff, counter);
     exit(0); 
 }
 
